@@ -1,21 +1,53 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:app_productos_flutter/models/cart.dart';
+import 'package:app_productos_flutter/models/catalog.dart';
+import 'package:app_productos_flutter/screens/cart.dart';
+import 'package:app_productos_flutter/screens/catalog.dart';
 
 void main() {
-  runApp(const MainApp());
+  runApp(const MiApp());
 }
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+GoRouter router() {
+  return GoRouter(
+    initialLocation: '/catalogo',
+    routes: [
+      GoRoute(
+        path: '/catalogo',
+        builder: (context, state) => const MiCatalogo(),
+        routes: [
+          GoRoute(
+            path: 'carrito',
+            builder: (context, state) => const MiCarrito(),
+          ),
+        ],
+      ),
+    ],
+  );
+}
+
+class MiApp extends StatelessWidget {
+  const MiApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: Text(''),
+    return MultiProvider(
+      providers: [
+        Provider(create: (context) => CatalogoModelo()),
+        ChangeNotifierProxyProvider<CatalogoModelo, CarritoModelo>(
+          create: (context) => CarritoModelo(),
+          update: (context, catalogo, carrito) {
+            if (carrito == null) throw ArgumentError.notNull('carrito');
+            carrito.catalogo = catalogo;
+            return carrito;
+          },
         ),
+      ],
+      child: MaterialApp.router(
+        title: 'Taller 3',
+        routerConfig: router(),
       ),
     );
   }
